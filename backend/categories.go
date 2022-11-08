@@ -7,27 +7,28 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/google/uuid"
 )
 
 const (
 	// CategoriesPath retrieves all the categories inside the db.
 	// /api/categories
 	CategoriesPath = "/categories"
-	// CategoryByNamePath is used by the handler GetCategoryByName to
-	// return the category by name.
-	// /api/categories/:category-name
-	CategoryByNamePath = ":" + CategoryNameParam
+	// CategoryByIdPath is used by the handler GetCategoryById to
+	// return the category by id.
+	// /api/categories/:category-id
+	CategoryByIdPath = ":" + CategoryParam
 
-	// CategoryNameParam is the category name value
-	CategoryNameParam = "category-name"
+	// CategoryParam is the category id value
+	CategoryParam = "category-id"
 )
 
 type category struct {
-	XMLName     xml.Name `gorm:"-" json:"-" xml:"Category"`
-	ID          int      `gorm:"column:category_id;primaryKey" json:"-" xml:"-"`
-	Name        string   `gorm:"column:name;not null;unique" json:"name" xml:"Name"`
-	Description string   `gorm:"column:description;not null" json:"description" xml:"Description"`
+	XMLName     xml.Name  `gorm:"-" json:"-" xml:"Category"`
+	ID          uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();column:category_id;primaryKey" json:"-" xml:"-"`
+	Name        string    `gorm:"column:name;not null;unique" json:"name" xml:"Name"`
+	Description string    `gorm:"column:description;not null" json:"description" xml:"Description"`
+	Word        []word
 }
 
 // OrderByColumnsAllowed will return the list of columns allowed to order by.
@@ -54,7 +55,7 @@ func getCategories(c *gin.Context) {
 }
 
 func getCategoryByName(c *gin.Context) {
-	category, err := doGetCategories(c.Request.Context(), ParseRequest(c, category{Name: c.Param(CategoryNameParam)}))
+	category, err := doGetCategories(c.Request.Context(), ParseRequest(c, category{Name: c.Param(CategoryParam)}))
 	if err != nil {
 		ErrRes(c, err, http.StatusNotFound)
 		return
@@ -89,7 +90,7 @@ func delCategory(c *gin.Context) {
 		rows int64
 		err  error
 	)
-	if rows, err = doDelCategory(c.Request.Context(), category{Name: c.Param(CategoryNameParam)}); err != nil {
+	if rows, err = doDelCategory(c.Request.Context(), category{Name: c.Param(CategoryParam)}); err != nil {
 		ErrRes(c, err, http.StatusBadRequest)
 		return
 	}
@@ -119,24 +120,4 @@ func doGetCategories(ctx context.Context, wrap WrapperRequest[category]) ([]cate
 	tx := wrap.ToScope(getInstanceWithCtx(ctx).Where(wrap.Body)).Find(&result)
 
 	return result, tx.Error
-}
-
-func whereCategories(db *gorm.DB, fc category) *gorm.DB {
-	if fc.ID != 0 {
-		db = db.Where(fc.TableName()+".id = ?", fc.ID)
-	}
-
-	if fc.Description != "" {
-		db = db.Where(fc.TableName()+".description like ?", fc.Description)
-	}
-
-	if fc.Name != "" {
-		db = db.Where(fc.TableName()+".name = ?", fc.Name)
-	}
-
-	return db
-}
-
-func selectWhereCategories(db *gorm.DB, fc category, projection ...string) *gorm.DB {
-	return db.Table(fc.TableName()).Select(projection).Where(&fc)
 }

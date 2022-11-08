@@ -28,7 +28,7 @@ func main() {
 
 	r.Use(cors.Default())
 
-	getInstance().AutoMigrate(new(category))
+	getInstance().AutoMigrate(new(category), new(word))
 
 	main := r.Group("/api")
 
@@ -37,8 +37,13 @@ func main() {
 		categories.GET("", getCategories)
 		categories.POST("", addCategory)
 
-		categories.GET(CategoryByNamePath, getCategoryByName)
-		categories.DELETE(CategoryByNamePath, delCategory)
+		categories.GET(CategoryByIdPath, getCategoryByName)
+		categories.DELETE(CategoryByIdPath, delCategory)
+	}
+
+	words := categories.Group(WordsPath)
+	{
+		words.GET("", getWords)
 	}
 
 	r.Run(":9090")

@@ -1,0 +1,15 @@
+CREATE TABLE words (
+  id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+  term TEXT NOT NULL UNIQUE,
+  def TEXT NOT NULL UNIQUE,
+  PRIMARY KEY (id)
+);
+
+INSERT INTO words(term, def, category_id)
+VALUES 
+  ('1term', '1def', 45),
+  ('2term', '2def', 47),
+  ('3term', '3def', 45),
+  ('4term', '4def', 47),
+  ('5term', '5def', 45),
+  ('6term', '6def', 47);
