@@ -1,14 +1,14 @@
 import { Button, Form, Modal } from "react-bootstrap";
-import Category from '../model/categories';
+import Category from '../model/Categories';
 import { SubmitHandler, useForm } from "react-hook-form";
-import CategoryAction from "../model/categoryAction";
-import Action from "../model/action";
+import ModelAction from "../model/CategoryAction";
+import Action from "../model/Action";
 import { useEffect } from "react";
 
 interface Props {
   show: boolean;
   setShow: React.Dispatch<boolean>;
-  setCategoryAction: React.Dispatch<CategoryAction>;
+  setCategoryAction: React.Dispatch<ModelAction<Category>>;
 }
 
 type CategoryInput = {
@@ -22,7 +22,7 @@ export default function CategoryModal({ show, setShow, setCategoryAction }: Prop
   const handleClose = () => setShow(false);
 
   const addCategory: SubmitHandler<CategoryInput> = (data) => {
-    setCategoryAction({ c: new Category(data.name, data.description, 0), action: Action.POST });
+    setCategoryAction({ t: new Category(data.name, data.description, 0), action: Action.POST });
     handleClose();
   }
 
